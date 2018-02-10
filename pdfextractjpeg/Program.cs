@@ -26,14 +26,10 @@ namespace pdfextractjpeg
 
                 foreach (PdfItem item in items)
                 {
-                    PdfReference reference = item as PdfReference;
-                    if (reference != null)
+                    PdfDictionary xObject = (item as PdfReference)?.Value as PdfDictionary;
+                    if (xObject != null && xObject.Elements.GetString("/Subtype") == "/Image")
                     {
-                        PdfDictionary xObject = reference.Value as PdfDictionary;
-                        if (xObject != null && xObject.Elements.GetString("/Subtype") == "/Image")
-                        {
-                            ExportImage(xObject, ref imageCount);
-                        }
+                        ExportImage(xObject, ref imageCount);
                     }
                 }
             }
