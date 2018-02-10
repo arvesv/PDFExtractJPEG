@@ -33,8 +33,6 @@ namespace pdfextractjpeg
                         if (xObject != null && xObject.Elements.GetString("/Subtype") == "/Image")
                         {
                             ExportImage(xObject, ref imageCount);
-
-
                         }
                     }
                 }
@@ -60,31 +58,9 @@ namespace pdfextractjpeg
                         BinaryWriter bw = new BinaryWriter(fs);
                         bw.Write(stream);
                         bw.Close();
-
-
-
                     }
-
-              
-
-
                 }
-
-
-
             }
-/*            string filter = xObject.Elements.GetName("/Filter");
-            switch(filter)
-            {
-                case "/DCTDecode":
-                    ExportJpegImage(xObject,  ref imageCount);
-                    break;
-            }*/
-        }
-
-        private static void ExportJpegImage(object image, ref int count)
-        {
-            throw new NotImplementedException();
         }
     }
 }
