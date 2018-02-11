@@ -14,10 +14,18 @@ namespace pdfextractjpeg
     {
         static void Main(string[] args)
         {
-            int imageCount = 0;
-            var pdffile = @"C:\Users\Arve\OneDrive\ScannerPro\Scan 20 Nov 2017 at 15.33.pdf";
+            string pdffilenname = args[0];
 
-            foreach(var page in PdfReader.Open(pdffile).Pages) 
+            GenFileName filenamegenerator =
+                (new GenerateFileName(
+                    Path.Combine(
+                        Path.GetDirectoryName(pdffilenname),
+                        Path.GetFileNameWithoutExtension(pdffilenname)),
+                    ".jpg")
+                 ).GetNextFileName;  
+       
+
+            foreach(var page in PdfReader.Open(pdffilenname).Pages) 
             {            
                 ICollection < PdfItem > items =
                     page.Elements.GetDictionary("/Resources")?
@@ -29,15 +37,14 @@ namespace pdfextractjpeg
                     PdfDictionary xObject = (item as PdfReference)?.Value as PdfDictionary;
                     if (xObject != null && xObject.Elements.GetString("/Subtype") == "/Image")
                     {
-                        ExportImage(xObject, ref imageCount);
+                        ExportImage(xObject, filenamegenerator);
                     }
                 }
             }
         }
 
-        private static void ExportImage(PdfDictionary xObject, ref int imageCount)
+        private static void ExportImage(PdfDictionary xObject, GenFileName filenamegenerator)
         {
-            int count = 0;
             foreach (var elem in xObject.Elements)
             {
                 if(elem.Key == "/Filter")
@@ -50,7 +57,7 @@ namespace pdfextractjpeg
                     {
                         byte[] stream = xObject.Stream.Value;
 
-                        FileStream fs = new FileStream(String.Format("e:\\Image{0}.jpeg", count++), FileMode.Create, FileAccess.Write);
+                        FileStream fs = new FileStream(filenamegenerator(), FileMode.Create, FileAccess.Write);
                         BinaryWriter bw = new BinaryWriter(fs);
                         bw.Write(stream);
                         bw.Close();
