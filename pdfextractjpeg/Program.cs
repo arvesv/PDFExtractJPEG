@@ -16,16 +16,22 @@ namespace pdfextractjpeg
         {
             string pdffilenname = args[0];
 
-            GenFileName filenamegenerator =
-                (new GenerateFileName(
+            BinaryFileSaver filenamegenerator =
+                (new FileSaver(
                     Path.Combine(
                         Path.GetDirectoryName(pdffilenname),
                         Path.GetFileNameWithoutExtension(pdffilenname)),
                     ".jpg")
-                 ).GetNextFileName;  
-       
+                 ).Save;
 
-            foreach(var page in PdfReader.Open(pdffilenname).Pages) 
+            ExtractJpegFromPdf(pdffilenname, filenamegenerator);
+        }
+
+
+        static int ExtractJpegFromPdf(string pdffile, BinaryFileSaver filenamegenerator)
+        {
+            int count = 0;
+            foreach(var page in PdfReader.Open(pdffile).Pages) 
             {            
                 ICollection < PdfItem > items =
                     page.Elements.GetDictionary("/Resources")?
@@ -38,12 +44,14 @@ namespace pdfextractjpeg
                     if (xObject != null && xObject.Elements.GetString("/Subtype") == "/Image")
                     {
                         ExportImage(xObject, filenamegenerator);
+                        count++;
                     }
                 }
             }
+            return count;
         }
 
-        private static void ExportImage(PdfDictionary xObject, GenFileName filenamegenerator)
+        private static void ExportImage(PdfDictionary xObject, BinaryFileSaver filesaver)
         {
             foreach (var elem in xObject.Elements)
             {
@@ -55,12 +63,7 @@ namespace pdfextractjpeg
 
                     if(qah == "/DCTDecode")
                     {
-                        byte[] stream = xObject.Stream.Value;
-
-                        FileStream fs = new FileStream(filenamegenerator(), FileMode.Create, FileAccess.Write);
-                        BinaryWriter bw = new BinaryWriter(fs);
-                        bw.Write(stream);
-                        bw.Close();
+                        filesaver(xObject.Stream.Value);
                     }
                 }
             }
