@@ -28,9 +28,8 @@ namespace pdfextractjpeg
         }
 
 
-        static int ExtractJpegFromPdf(string pdffile, BinaryFileSaver filenamegenerator)
+        static void ExtractJpegFromPdf(string pdffile, BinaryFileSaver filenamegenerator)
         {
-            int count = 0;
             foreach(var page in PdfReader.Open(pdffile).Pages) 
             {            
                 ICollection < PdfItem > items =
@@ -44,11 +43,9 @@ namespace pdfextractjpeg
                     if (xObject != null && xObject.Elements.GetString("/Subtype") == "/Image")
                     {
                         ExportImage(xObject, filenamegenerator);
-                        count++;
                     }
                 }
             }
-            return count;
         }
 
         private static void ExportImage(PdfDictionary xObject, BinaryFileSaver filesaver)
